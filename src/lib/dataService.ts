@@ -157,6 +157,12 @@ function throwError(error: unknown) {
   throw new Error(message)
 }
 
+function isMissingAuthSession(error: unknown) {
+  if (!error) return false
+  const message = error instanceof Error ? error.message : String(error)
+  return message.toLowerCase().includes('auth session missing')
+}
+
 function toStudent(row: DbStudent): Student {
   return {
     id: row.id,
@@ -246,6 +252,7 @@ export async function getCurrentTeacher(): Promise<TeacherProfile | null> {
     data: { user },
     error: userError,
   } = await client.auth.getUser()
+  if (isMissingAuthSession(userError)) return null
   throwError(userError)
   if (!user) return null
   const { data, error } = await client
@@ -262,6 +269,9 @@ export async function signInTeacher(email: string, password: string): Promise<Au
   if (!isSupabaseConfigured) return { profile: demoTeacher }
   const client = requireSupabase()
   const { error } = await client.auth.signInWithPassword({ email, password })
+  if (error?.message.toLowerCase().includes('email not confirmed')) {
+    throw new Error('이메일 확인을 먼저 완료한 뒤 로그인해 주세요.')
+  }
   throwError(error)
   return { profile: await getCurrentTeacher() }
 }
