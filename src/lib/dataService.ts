@@ -153,7 +153,16 @@ function requireSupabase() {
 
 function throwError(error: unknown) {
   if (!error) return
-  const message = error instanceof Error ? error.message : String(error)
+  const supabaseError = error as {
+    message?: string
+    details?: string
+    hint?: string
+    code?: string
+  }
+  const message =
+    supabaseError.message ||
+    [supabaseError.code, supabaseError.details, supabaseError.hint].filter(Boolean).join(' / ') ||
+    (error instanceof Error ? error.message : JSON.stringify(error))
   throw new Error(message)
 }
 
