@@ -301,6 +301,9 @@ export async function signUpTeacher(
     password,
     options: { data: { name, school } },
   })
+  if (error?.message.toLowerCase().includes('signups not allowed')) {
+    throw new Error('Supabase에서 새 회원가입이 꺼져 있습니다. Authentication > Sign In / Providers > Email에서 Allow new users to sign up을 켜 주세요.')
+  }
   throwError(error)
   if (!data.user || !data.session) return { profile: null, needsEmailConfirmation: true }
   const { error: profileError } = await client.from('teacher_profiles').upsert({
