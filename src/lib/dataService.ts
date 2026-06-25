@@ -281,6 +281,9 @@ export async function signInTeacher(email: string, password: string): Promise<Au
   if (error?.message.toLowerCase().includes('email not confirmed')) {
     throw new Error('이메일 확인을 먼저 완료한 뒤 로그인해 주세요.')
   }
+  if (error?.message.toLowerCase().includes('invalid login credentials')) {
+    throw new Error('이메일/비밀번호가 맞지 않거나 이메일 확인이 끝나지 않았습니다. Supabase Authentication > Users에서 이 계정이 있는지 확인해 주세요.')
+  }
   throwError(error)
   return { profile: await getCurrentTeacher() }
 }
